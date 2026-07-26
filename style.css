@@ -1,0 +1,484 @@
+@font-face {
+  font-family: system-sans;
+  src: local("Helvetica Neue");
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+:root {
+  --nav-h: 80px;
+  --side-pad: 56px;
+  --ink: #111;
+  --paper: #fdfdfc;
+  --dim: #8a8a86;
+  --line: #e4e3df;
+  --accent: #4c868a;
+  /* fixed size normally, but never taller than the viewport actually allows
+     (nav height + a little breathing room), so short windows don't clip it */
+  --card-h: min(607px, calc(100vh - var(--nav-h) - 80px));
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ---------- landing splash (index.html) ---------- */
+body.landing-body {
+  overflow: hidden;
+}
+
+.landing-link {
+  position: relative;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+.landing-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.landing-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.55);
+}
+
+.landing-name {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+}
+
+.landing-sub {
+  margin-top: 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* ---------- top nav ---------- */
+.topnav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 28px;
+  padding: 0 var(--side-pad) calc(var(--nav-h) - 20px);
+  background: var(--paper);
+  z-index: 20;
+}
+
+.wordmark {
+  align-self: flex-end;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.nav-divider {
+  width: 1px;
+  align-self: flex-start;
+  height: 39px;
+  background: #dcdbd6;
+}
+
+.nav-menu {
+  position: relative;
+  align-self: flex-end;
+}
+
+.nav-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--dim);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.nav-toggle:hover {
+  color: var(--accent);
+}
+
+.nav-projects {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  list-style: none;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 16px 0 0;
+  background: var(--paper);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 25;
+}
+
+.nav-projects.open {
+  display: flex;
+}
+
+.nav-projects a {
+  color: var(--dim);
+  transition: color 0.2s ease;
+}
+
+.nav-projects a:hover {
+  color: var(--accent);
+}
+
+/* ---------- main / landing ---------- */
+.main {
+  margin-top: var(--nav-h);
+  min-height: calc(100vh - var(--nav-h));
+}
+
+.landing {
+  height: calc(100vh - var(--nav-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+
+.intro-video-wrap {
+  --intro-w: clamp(280px, 40vw, 520px);
+  --intro-h: calc(var(--intro-w) * 9 / 16);
+  width: var(--intro-w);
+  height: var(--intro-h);
+  position: relative;
+  overflow: hidden;
+}
+
+.intro-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--intro-w);
+  height: var(--intro-h);
+  object-fit: cover;
+  transform: translate(-50%, -50%);
+}
+
+/* some clips in the random playlist are native portrait footage — this
+   class (toggled per-clip in JS) sizes it pre-rotation with width/height
+   swapped, then rotates 90deg clockwise around its own center so the
+   rotated box still exactly matches the (landscape) wrapper. */
+.intro-video.rotate90 {
+  width: var(--intro-h);
+  height: var(--intro-w);
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* ---------- gallery (horizontal scroll) ---------- */
+.gallery-viewport {
+  height: calc(100vh - var(--nav-h));
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  scroll-behavior: auto;
+}
+.gallery-viewport::-webkit-scrollbar { display: none; }
+
+.gallery-track {
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 80px;
+  /* top gap = 90% of the perfectly-centered gap (10% less), bottom gap gets
+     the rest — instead of a fixed px offset, so it still stays correct as
+     the window is resized */
+  padding: calc((100vh - var(--nav-h) - var(--card-h)) * 0.45) var(--side-pad) 0;
+  width: max-content;
+}
+
+.intro-card {
+  view-transition-name: intro-block;
+  position: sticky;
+  left: var(--side-pad);
+  z-index: 5;
+  background: rgba(253, 253, 252, 0.82);
+  height: var(--card-h);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 28vw;
+  min-width: 320px;
+  flex: 0 0 auto;
+  padding-right: 24px;
+}
+
+/* in the horizontal gallery, bleed the translucent panel to the true left edge
+   (x=0) instead of stopping at the track's inset, so no unmasked seam shows.
+   Shared with grid.html's intro card so both pages look identical — only the
+   sticky axis differs (left vs top) since one page scrolls horizontally and
+   the other vertically. */
+.gallery-track .intro-card {
+  left: 0 !important;
+  margin-left: calc(-1 * var(--side-pad)) !important;
+  margin-right: var(--side-pad) !important;
+  padding-left: var(--side-pad) !important;
+  padding-right: var(--side-pad) !important;
+  width: calc(480px + var(--side-pad)) !important;
+  min-width: calc(320px + var(--side-pad));
+}
+
+.intro-card .eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  margin-bottom: 18px;
+}
+
+.intro-card h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1.2;
+  margin: 0 0 14px;
+}
+
+.intro-card h2 {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--dim);
+  margin: 0 0 26px;
+}
+
+.intro-card p {
+  font-size: 12px;
+  line-height: 1.85;
+  color: #444;
+  max-width: 46ch;
+}
+
+.card {
+  flex: 0 0 auto;
+  height: var(--card-h);
+  margin: 0;
+}
+
+.card img {
+  height: 100%;
+  width: auto;
+  max-width: 60vw;
+  object-fit: cover;
+  display: block;
+}
+
+.copyright {
+  position: fixed;
+  bottom: 28px;
+  left: var(--side-pad);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  color: var(--ink);
+  z-index: 15;
+  pointer-events: none;
+}
+
+/* custom cursor state: move above vertical center to arm the "expand" click */
+body.cursor-up .gallery-viewport,
+body.cursor-up .gallery-viewport * {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M10 16V4M6 8l4-4 4 4" fill="none" stroke="white" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 16V4M6 8l4-4 4 4" fill="none" stroke="black" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>') 10 10, n-resize;
+}
+
+/* ---------- grid (all images at once) ---------- */
+.grid-viewport {
+  display: flex;
+  align-items: flex-start;
+  padding: 0 var(--side-pad) 120px;
+  min-height: calc(100vh - var(--nav-h));
+}
+
+/* fixed, not sticky: completely unaffected by scrolling, no matter how tall
+   the image grid gets. Same visual position as the slide page's intro card
+   (nav height + the same top-gap formula), positioned from the viewport
+   itself rather than from anything in the flex row. */
+/* fully self-contained — doesn't rely on the shared .intro-card bleed rule's
+   margin-cancelling trick, which was built for a flex-row layout, not a
+   position:fixed one. Every value needed is set explicitly here instead. */
+.grid-intro {
+  position: fixed;
+  top: calc(var(--nav-h) + (100vh - var(--nav-h) - var(--card-h)) * 0.45);
+  left: 0;
+  margin: 0;
+  z-index: 5;
+  background: rgba(253, 253, 252, 0.82);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: var(--card-h);
+  width: calc(480px + var(--side-pad));
+  padding: 0 var(--side-pad) 0 var(--side-pad);
+}
+
+.grid-wrap {
+  flex: 1 1 auto;
+  /* reserve the space the now-fixed intro card used to occupy in the row:
+     its own width + the row's former gap */
+  margin-left: calc(480px + 48px);
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+}
+
+.grid-item {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+}
+
+.grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.grid-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.grid-item:hover::after {
+  opacity: 0.35;
+}
+
+/* index.html and project.html are designed to fit exactly one viewport with
+   no page-level vertical scroll (project.html scrolls its gallery
+   horizontally instead) — a stray sub-pixel rounding error across the
+   layered calc()s could otherwise show a 1-2px scrollbar. grid.html opts
+   back into normal vertical scrolling via body.scrollable, since showing
+   every image is meant to be a tall, scrollable page. */
+@media (min-width: 901px) {
+  body {
+    overflow-y: hidden;
+  }
+  body.scrollable {
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  :root { --side-pad: 24px; --nav-h: 80px; }
+  .nav-projects { gap: 16px; font-size: 12px; }
+
+  /* narrow viewport: gallery scrolls vertically instead of horizontally.
+     overflow must match on both axes (both "visible") — mixing visible with
+     a non-visible value makes the browser silently force the visible axis to
+     "auto", which turns this into its own scroll container and breaks the
+     intro card's sticky positioning against the real page scroll. */
+  .gallery-viewport {
+    height: auto;
+    overflow: visible;
+  }
+
+  .gallery-track {
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    width: auto;
+    padding: 0 6% 60px;
+    gap: 6vw;
+  }
+
+  /* intro card keeps the same sticky + translucent behavior, just pinned to
+     the top (instead of the left) since scrolling is now vertical, with
+     images still passing underneath it. height:auto so it doesn't dominate
+     a short mobile viewport and hide the images scrolling past it. Left edge
+     sits at the track's normal inset (matching the images' left margin);
+     right edge bleeds past the track's own padding to the true side edge. */
+  .gallery-track .intro-card {
+    position: sticky;
+    align-self: flex-start;
+    top: var(--nav-h);
+    left: auto;
+    height: auto;
+    margin: 0 -6% calc(var(--nav-h) - 6vw) 0;
+    padding: 20px 6%;
+    width: calc(100% + 6%);
+    min-width: 0;
+  }
+
+  /* mobile: shrink the description text ~10% and keep top/bottom padding
+     matched */
+  .intro-card .eyebrow {
+    font-size: 8px;
+  }
+
+  .intro-card h1 {
+    font-size: 29px;
+  }
+
+  .intro-card h2 {
+    font-size: 12px;
+  }
+
+  .intro-card p {
+    font-size: 11px;
+  }
+
+  /* images keep a fixed aspect ratio and simply scale down with viewport
+     width, instead of being height-driven (vh) and getting cropped.
+     !important guards against the desktop height/max-width rules winning
+     on any element for any reason. */
+  .card {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    width: 95% !important;
+    max-width: 95% !important;
+    aspect-ratio: 3 / 4 !important;
+    align-self: center !important;
+  }
+
+  .card img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+  }
+}
